@@ -1,0 +1,7 @@
+options:
+  crash-timeout: 50s
+  max-wait-time: 10s
+
+sync:
+  inventory: true
+  ender-chest: true
