@@ -1,28 +1,34 @@
 package io.github.itsflicker.sync.bukkit.api.nms
 
 import org.bukkit.entity.Player
+import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.PlayerInventory
 
 abstract class NMS {
 
-    abstract fun getActiveEffects(player: Player): ByteArray
+    abstract fun getSelectedItemSlot(player: Player): Int
 
-    abstract fun getAttributes(player: Player): ByteArray
+    abstract fun setSelectedItemSlot(player: Player, slot: Int)
 
-    abstract fun getEnderChest(player: Player): ByteArray
+    abstract fun serializeActiveEffects(player: Player): ByteArray
 
-    abstract fun getInventory(player: Player): ByteArray
+    abstract fun serializeAttributes(player: Player): ByteArray
 
-    abstract fun getRecipeBook(player: Player): ByteArray
+    abstract fun serializeEnderChest(player: Player): ByteArray
 
-    abstract fun setActiveEffects(player: Player, data: ByteArray)
+    abstract fun serializeInventory(player: Player): ByteArray
 
-    abstract fun setAttributes(player: Player, data: ByteArray)
+    abstract fun serializeRecipeBook(player: Player): ByteArray
 
-    abstract fun setEnderChest(player: Player, data: ByteArray)
+    abstract fun deserializeActiveEffects(data: ByteArray, player: Player)
 
-    abstract fun setInventory(player: Player, data: ByteArray)
+    abstract fun deserializeAttributes(data: ByteArray, player: Player)
 
-    abstract fun setRecipeBook(player: Player, data: ByteArray)
+    abstract fun deserializeEnderChest(data: ByteArray, player: Player?): Inventory
+
+    abstract fun deserializeInventory(data: ByteArray, player: Player?): PlayerInventory
+
+    abstract fun deserializeRecipeBook(data: ByteArray, player: Player)
 
     abstract fun freeze(player: Player)
 

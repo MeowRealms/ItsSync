@@ -23,7 +23,6 @@ object RedisManager {
         }
     }
 
-//    @Awake(LifeCycle.DISABLE)
     fun close() {
         connection?.close()
     }

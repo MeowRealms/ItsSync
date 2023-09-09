@@ -1,13 +1,17 @@
 package io.github.itsflicker.sync.common.data
 
-import taboolib.expansion.Id
-import taboolib.expansion.Key
+import taboolib.common.util.unsafeLazy
 import java.util.*
 
 class PlayerDataStored(
-    @Id
-    val uuid: UUID,
-    @Key
-    val version: Date,
+    val player: UUID,
+    val version: Date = Date(),
+    var locked: Boolean = false,
+    val reason: String,
     val data: ByteArray
-)
+) {
+
+    val playerData by unsafeLazy {
+        PlayerData.fromByteArray(data)
+    }
+}

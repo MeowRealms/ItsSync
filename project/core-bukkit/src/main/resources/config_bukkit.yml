@@ -1,7 +1,15 @@
 options:
+  debug: false
   crash-timeout: 50s
   max-wait-time: 10s
 
+save:
+  join: false
+  quit: true
+  death: true
+  worldSave: true
+
 sync:
   inventory: true
-  ender-chest: true
+  enderChest: true
+  flySpeed: true

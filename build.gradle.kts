@@ -41,6 +41,7 @@ subprojects {
         implementation("io.izzel.taboolib:module-configuration:$taboolib_version")
         implementation("io.izzel.taboolib:module-database:$taboolib_version")
         implementation("io.izzel.taboolib:module-lang:$taboolib_version")
+        implementation("io.izzel.taboolib:module-metrics:$taboolib_version")
         implementation("io.izzel.taboolib:module-nms:$taboolib_version")
         implementation("io.izzel.taboolib:platform-bukkit:$taboolib_version")
         implementation("io.izzel.taboolib:platform-bungee:$taboolib_version")

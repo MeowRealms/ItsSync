@@ -1,5 +1,6 @@
 package io.github.itsflicker.sync.bukkit
 
+import io.github.itsflicker.sync.common.redis.RedisManager
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.Plugin
@@ -24,9 +25,13 @@ object ItsSyncBukkit : Plugin() {
     override fun onEnable() {
         if (serverConfig.getString("uuid")?.parseUUID() == null) {
             val uuid = UUID.nameUUIDFromBytes(getDataFolder().absolutePath.toByteArray())
-            serverConfig["uuid"] = uuid withComment "Do not change or delete!"
+            serverConfig["uuid"] = uuid withComment "Do not change or delete! Do not copy this file to other servers!"
             serverConfig.saveToFile()
         }
+    }
+
+    override fun onDisable() {
+        RedisManager.close()
     }
 
 }

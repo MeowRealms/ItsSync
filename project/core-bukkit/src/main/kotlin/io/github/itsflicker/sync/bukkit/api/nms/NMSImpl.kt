@@ -7,17 +7,23 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.server.level.EntityPlayer
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.PlayerInventory
+import net.minecraft.world.inventory.InventoryEnderChest
 import org.bukkit.Bukkit
 import org.bukkit.craftbukkit.v1_20_R1.CraftServer
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventory
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventoryPlayer
 import org.bukkit.entity.Player
 import taboolib.library.reflex.Reflex.Companion.getProperty
+import taboolib.library.reflex.Reflex.Companion.unsafeInstance
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
 
+@Suppress("unused")
 class NMSImpl : NMS() {
 
     private val players = (Bukkit.getServer() as CraftServer).handle
@@ -26,7 +32,17 @@ class NMSImpl : NMS() {
     private val playersByUUID = (Bukkit.getServer() as CraftServer).handle
         .getProperty<HashMap<UUID, EntityPlayer>>("playersByUUID")
 
-    override fun getActiveEffects(player: Player): ByteArray {
+    override fun getSelectedItemSlot(player: Player): Int {
+        val entityPlayer = getNMSPlayer(player)
+        return entityPlayer.inventory.selected
+    }
+
+    override fun setSelectedItemSlot(player: Player, slot: Int) {
+        val entityPlayer = getNMSPlayer(player)
+        entityPlayer.inventory.selected = slot
+    }
+
+    override fun serializeActiveEffects(player: Player): ByteArray {
         val entityPlayer = getNMSPlayer(player)
         val list = NBTTagList()
         if (entityPlayer.activeEffects.isNotEmpty()) {
@@ -42,7 +58,7 @@ class NMSImpl : NMS() {
         }
     }
 
-    override fun getAttributes(player: Player): ByteArray {
+    override fun serializeAttributes(player: Player): ByteArray {
         val entityPlayer = getNMSPlayer(player)
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             DataOutputStream(byteArrayOutputStream).use { dataOutputStream ->
@@ -53,7 +69,7 @@ class NMSImpl : NMS() {
         }
     }
 
-    override fun getEnderChest(player: Player): ByteArray {
+    override fun serializeEnderChest(player: Player): ByteArray {
         val entityPlayer = getNMSPlayer(player)
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             DataOutputStream(byteArrayOutputStream).use { dataOutputStream ->
@@ -64,7 +80,7 @@ class NMSImpl : NMS() {
         }
     }
 
-    override fun getInventory(player: Player): ByteArray {
+    override fun serializeInventory(player: Player): ByteArray {
         val entityPlayer = getNMSPlayer(player)
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             DataOutputStream(byteArrayOutputStream).use { dataOutputStream ->
@@ -75,7 +91,7 @@ class NMSImpl : NMS() {
         }
     }
 
-    override fun getRecipeBook(player: Player): ByteArray {
+    override fun serializeRecipeBook(player: Player): ByteArray {
         val entityPlayer = getNMSPlayer(player)
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             DataOutputStream(byteArrayOutputStream).use { dataOutputStream ->
@@ -86,58 +102,50 @@ class NMSImpl : NMS() {
         }
     }
 
-    override fun setActiveEffects(player: Player, data: ByteArray) {
+    override fun deserializeActiveEffects(data: ByteArray, player: Player) {
         val entityPlayer = getNMSPlayer(player)
-        ByteArrayInputStream(data).use { byteArrayInputStream ->
-            DataInputStream(byteArrayInputStream).use { dataInputStream ->
-                val list = NBTTagList.TYPE.load(dataInputStream, 0, NBTReadLimiter.UNLIMITED)
-                (0 until list.size).forEach {
-                    val effect = MobEffect.load(list.getCompound(it))
-                    if (effect != null) {
-                        entityPlayer.activeEffects[effect.effect] = effect
-                    }
+        data.dataInputStream {
+            val list = NBTTagList.TYPE.load(it, 0, NBTReadLimiter.UNLIMITED)
+            (0 until list.size).forEach { i ->
+                val effect = MobEffect.load(list.getCompound(i))
+                if (effect != null) {
+                    entityPlayer.activeEffects[effect.effect] = effect
                 }
             }
         }
     }
 
-    override fun setAttributes(player: Player, data: ByteArray) {
+    override fun deserializeAttributes(data: ByteArray, player: Player) {
         val entityPlayer = getNMSPlayer(player)
-        ByteArrayInputStream(data).use { byteArrayInputStream ->
-            DataInputStream(byteArrayInputStream).use { dataInputStream ->
-                val list = NBTTagList.TYPE.load(dataInputStream, 0, NBTReadLimiter.UNLIMITED)
-                entityPlayer.attributes.load(list)
-            }
+        data.dataInputStream {
+            val list = NBTTagList.TYPE.load(it, 0, NBTReadLimiter.UNLIMITED)
+            entityPlayer.attributes.load(list)
         }
     }
 
-    override fun setEnderChest(player: Player, data: ByteArray) {
-        val entityPlayer = getNMSPlayer(player)
-        ByteArrayInputStream(data).use { byteArrayInputStream ->
-            DataInputStream(byteArrayInputStream).use { dataInputStream ->
-                val list = NBTTagList.TYPE.load(dataInputStream, 0, NBTReadLimiter.UNLIMITED)
-                entityPlayer.enderChestInventory.fromTag(list)
-            }
+    override fun deserializeEnderChest(data: ByteArray, player: Player?): org.bukkit.inventory.Inventory {
+        val inv = player?.let { getNMSPlayer(it).enderChestInventory } ?: InventoryEnderChest()
+        data.dataInputStream {
+            val list = NBTTagList.TYPE.load(it, 0, NBTReadLimiter.UNLIMITED)
+            inv.fromTag(list)
         }
+        return CraftInventory(inv)
     }
 
-    override fun setInventory(player: Player, data: ByteArray) {
-        val entityPlayer = getNMSPlayer(player)
-        ByteArrayInputStream(data).use { byteArrayInputStream ->
-            DataInputStream(byteArrayInputStream).use { dataInputStream ->
-                val list = NBTTagList.TYPE.load(dataInputStream, 0, NBTReadLimiter.UNLIMITED)
-                entityPlayer.inventory.load(list)
-            }
+    override fun deserializeInventory(data: ByteArray, player: Player?): org.bukkit.inventory.PlayerInventory {
+        val inv = player?.let { getNMSPlayer(it).inventory } ?: PlayerInventory::class.java.unsafeInstance() as PlayerInventory
+        data.dataInputStream {
+            val list = NBTTagList.TYPE.load(it, 0, NBTReadLimiter.UNLIMITED)
+            inv.load(list)
         }
+        return CraftInventoryPlayer(inv)
     }
 
-    override fun setRecipeBook(player: Player, data: ByteArray) {
+    override fun deserializeRecipeBook(data: ByteArray, player: Player) {
         val entityPlayer = getNMSPlayer(player)
-        ByteArrayInputStream(data).use { byteArrayInputStream ->
-            DataInputStream(byteArrayInputStream).use { dataInputStream ->
-                val compound = NBTTagCompound.TYPE.load(dataInputStream, 0, NBTReadLimiter.UNLIMITED)
-                entityPlayer.recipeBook.fromNbt(compound, entityPlayer.server.recipeManager)
-            }
+        data.dataInputStream {
+            val compound = NBTTagCompound.TYPE.load(it, 0, NBTReadLimiter.UNLIMITED)
+            entityPlayer.recipeBook.fromNbt(compound, entityPlayer.server.recipeManager)
         }
     }
 
@@ -151,5 +159,13 @@ class NMSImpl : NMS() {
 
     private fun getNMSPlayer(player: Player): EntityPlayer {
         return (player as CraftPlayer).handle
+    }
+
+    private fun ByteArray.dataInputStream(block: (DataInputStream) -> Unit) {
+        ByteArrayInputStream(this).use { byteArrayInputStream ->
+            DataInputStream(byteArrayInputStream).use { dataInputStream ->
+                block(dataInputStream)
+            }
+        }
     }
 }
