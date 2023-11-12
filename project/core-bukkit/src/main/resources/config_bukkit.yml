@@ -1,5 +1,5 @@
 options:
-  debug: false
+  debug: true
   crash-timeout: 50s
   max-wait-time: 10s
 
@@ -7,9 +7,24 @@ save:
   join: false
   quit: true
   death: true
+  changeWorld: true
   worldSave: true
 
 sync:
+  advancement: true
+  statistics: true
   inventory: true
   enderChest: true
-  flySpeed: true
+  effect: false
+  attribute: false
+  recipeBook: false
+  gamemode: false
+  health: true
+  maxHealth: false
+  food: true
+  exp: true
+  fly: false
+  walkSpeed: false
+  air: false
+  location: false
+  rotation: true

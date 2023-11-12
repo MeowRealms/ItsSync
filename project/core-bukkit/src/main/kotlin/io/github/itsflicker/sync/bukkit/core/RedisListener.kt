@@ -5,8 +5,11 @@ import io.github.itsflicker.sync.bukkit.util.debug
 import io.github.itsflicker.sync.bukkit.util.serverUUID
 import io.github.itsflicker.sync.common.data.PlayerState
 import io.github.itsflicker.sync.common.database.DatabaseManager
+import io.github.itsflicker.sync.common.redis.RedisManager
 import io.github.itsflicker.sync.common.util.uuid
 import org.bukkit.Bukkit
+import taboolib.common.LifeCycle
+import taboolib.common.platform.Awake
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.module.nms.nmsProxy
@@ -14,6 +17,13 @@ import java.util.*
 
 @PlatformSide([Platform.BUKKIT])
 object RedisListener {
+
+    @Awake(LifeCycle.ENABLE)
+    fun register() {
+        RedisManager.subscribe {
+            execute(it.message)
+        }
+    }
 
     fun execute(message: String) {
         val name = message.substringBefore(':')

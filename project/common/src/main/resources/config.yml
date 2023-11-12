@@ -5,6 +5,9 @@ redis:
   password: ~
   connect: 32
   timeout: 1000
+  data-prefix: "itssync-data:"
+  state-prefix: "itssync-state:"
+  message-channel: "itssync-message"
 
 database:
   enabled: true

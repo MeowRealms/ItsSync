@@ -5,7 +5,7 @@ import io.github.itsflicker.sync.bukkit.util.debug
 import io.github.itsflicker.sync.bukkit.util.serverUUID
 import io.github.itsflicker.sync.common.data.PlayerData
 import io.github.itsflicker.sync.common.data.PlayerState
-import io.github.itsflicker.sync.common.redis.RedisMessage
+import io.github.itsflicker.sync.common.redis.RedisMessages
 import org.bukkit.Bukkit
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -39,7 +39,7 @@ object ListenerJoin {
             if (state.server == serverUUID) {
                 return
             }
-            RedisMessage.Release(state.server, e.uniqueId).send()
+            RedisMessages.Release(state.server, e.uniqueId).send()
             val timeout = System.currentTimeMillis() + maxWaitTime.get()
             while (state is PlayerState.Locked && System.currentTimeMillis() < timeout) {
                 try {
@@ -78,7 +78,7 @@ object ListenerJoin {
     @SubscribeEvent(priority = EventPriority.MONITOR)
     fun onJoin(e: PlayerJoinEvent) {
         val player = e.player
-        RedisMessage.Disconnect(serverUUID, player.uniqueId).send()
+        RedisMessages.Disconnect(serverUUID, player.uniqueId).send()
         PlayerState.Locked(player.uniqueId, serverUUID).set()
         debug("Player ${player.name} (${player.uniqueId}): State locked")
         val data = dataCache.remove(player.uniqueId) ?: return

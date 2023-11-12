@@ -4,15 +4,14 @@ import com.alibaba.fastjson2.JSONObject
 import com.alibaba.fastjson2.to
 import com.alibaba.fastjson2.toJSONByteArray
 import io.github.itsflicker.sync.common.redis.RedisManager
-import taboolib.common.platform.ProxyGameMode
 import taboolib.module.configuration.ConfigNode
 import java.nio.ByteBuffer
 import java.util.*
 
 data class PlayerData(
-    val uuid: UUID,
-    val name: String,
-    var gamemode: ProxyGameMode? = null,
+    var uuid: UUID,
+    var name: String,
+    var gamemode: String? = null,
     var health: Double? = null,
     var maxHealth: Double? = null,
     var saturation: Float? = null,
@@ -42,6 +41,8 @@ data class PlayerData(
     var statistics: JSONObject? = null,
     var extraProperties: JSONObject? = null
 ) {
+
+    constructor() : this(UUID(0, 0), "")
 
     fun toByteArray(): ByteArray {
         return toJSONByteArray()

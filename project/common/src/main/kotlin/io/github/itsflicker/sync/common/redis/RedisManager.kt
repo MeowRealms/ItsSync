@@ -2,6 +2,7 @@ package io.github.itsflicker.sync.common.redis
 
 import io.github.itsflicker.sync.common.config.Config
 import io.github.itsflicker.sync.taboolib.expansion.AlkaidRedis
+import io.github.itsflicker.sync.taboolib.expansion.RedisMessage
 import io.github.itsflicker.sync.taboolib.expansion.SingleRedisConnection
 import io.github.itsflicker.sync.taboolib.expansion.fromConfig
 import taboolib.common.LifeCycle
@@ -47,8 +48,10 @@ object RedisManager {
         connection?.publish(channel, message)
     }
 
-    fun subscribe() {
-
+    fun subscribe(func: (RedisMessage) -> Unit) {
+        connection?.subscribe(channel) {
+            func(this)
+        }
     }
 
 }

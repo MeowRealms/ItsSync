@@ -6,6 +6,7 @@ import io.github.itsflicker.sync.common.data.PlayerData
 import org.bukkit.entity.Player
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
+import taboolib.common.platform.ProxyGameMode
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.util.resettableLazy
 import taboolib.module.configuration.util.getMap
@@ -37,7 +38,7 @@ object PlayerDataHandler {
         if (enables.getOrDefault("effect", false)) data.activeEffects = nms.serializeActiveEffects(player)
         if (enables.getOrDefault("attribute", false)) data.attributes = nms.serializeAttributes(player)
         if (enables.getOrDefault("recipeBook", false)) data.recipeBook = nms.serializeRecipeBook(player)
-        if (enables.getOrDefault("gamemode", false)) data.gamemode = proxyPlayer.gameMode
+        if (enables.getOrDefault("gamemode", false)) data.gamemode = proxyPlayer.gameMode.name
         if (enables.getOrDefault("health", true)) data.health = player.health
         if (enables.getOrDefault("maxHealth", false)) data.maxHealth = proxyPlayer.maxHealth
         if (enables.getOrDefault("food", true)) {
@@ -83,7 +84,7 @@ object PlayerDataHandler {
         if (enables.getOrDefault("effect", false)) data.activeEffects?.let { nms.deserializeActiveEffects(it, player) }
         if (enables.getOrDefault("attribute", false)) data.attributes?.let { nms.deserializeAttributes(it, player) }
         if (enables.getOrDefault("recipeBook", false)) data.recipeBook?.let { nms.deserializeRecipeBook(it, player) }
-        if (enables.getOrDefault("gamemode", false)) data.gamemode?.let { proxyPlayer.gameMode = it }
+        if (enables.getOrDefault("gamemode", false)) data.gamemode?.let { proxyPlayer.gameMode = ProxyGameMode.fromString(it) }
         if (enables.getOrDefault("health", true)) data.health?.let { player.health = it }
         if (enables.getOrDefault("maxHealth", false)) data.maxHealth?.let { proxyPlayer.maxHealth = it }
         if (enables.getOrDefault("food", true)) {
